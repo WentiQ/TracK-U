@@ -30,13 +30,30 @@
     <main>
       <section>
         <h2>📚 Mark Attendance</h2>
+
+        <!-- 🔹 Subject Management -->
+        <div class="subject-management">
+          <input type="text" id="new-subject" placeholder="Add new subject" />
+          <button onclick="addSubject()">➕ Add Subject</button>
+        </div>
+
+
+        <!-- 🔹 Subject List Edit Button -->
+        <button id="edit-subjects-btn" onclick="openSubjectListPopup()">✏️ Edit Subjects</button>
+
+        <!-- 🔹 Subject List Popup (hidden by default) -->
+        <div id="subject-list-popup" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close" onclick="closeSubjectListPopup()">&times;</span>
+            <h3>Edit Subjects</h3>
+            <ul id="subject-list"></ul>
+          </div>
+        </div>
+
+        <!-- 🔹 Attendance Entry -->
         <div class="attendance-entry">
           <label for="subject">Subject:</label>
-          <select id="subject">
-            <option>Math</option>
-            <option>Science</option>
-            <option>History</option>
-          </select>
+          <select id="subject"></select>
 
           <label for="status">Status:</label>
           <select id="status">
@@ -48,6 +65,7 @@
           <button onclick="addAttendance()">Add</button>
         </div>
 
+        <!-- 🔹 Attendance Summary -->
         <div id="attendance-summary"></div>
       </section>
     </main>
