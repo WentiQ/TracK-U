@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Student Tracker</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <nav id="sidebar">
+    <div class="sidebar-header">📘 Menu</div>
+    <ul>
+      <li><a href="index.html">🏠 Dashboard</a></li>
+      <li><a href="attendance.html">📅 Attendance</a></li>
+      <li><a href="tasks.html">✅ Tasks</a></li>
+      <li><a href="habits.html">💡 Habits</a></li>
+      <li><a href="events.html">🎉 Events</a></li>
+      <li><a href="todo.html">📝 To-Do</a></li>
+    </ul>
+  </nav>
+
+  <div id="content">
+    <header>
+      <button id="menu-toggle">☰</button>
+      <h1>Dashboard</h1>
+    </header>
+
+    <main>
+      <section class="dashboard-section">
+        <h2>📊 Today’s Summary</h2>
+        <div id="dashboard-metrics">
+          <p>📅 Attendance: <span id="attendance-score">--</span>%</p>
+          <p>✅ Tasks: <span id="task-score">--</span>%</p>
+          <p>💡 Habits: <span id="habit-score">--</span>%</p>
+          <p>🎉 Events: <span id="event-score">--</span>%</p>
+          <p>📝 To-Do: <span id="todo-score">--</span>%</p>
+        </div>
+
+        <div id="dashboard-total">
+          <h3>🧠 Total Daily Score: <span id="total-score">--</span> / 100</h3>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

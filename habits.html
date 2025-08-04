@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Habits - Student Tracker</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <nav id="sidebar">
+    <div class="sidebar-header">📘 Menu</div>
+    <ul>
+      <li><a href="index.html">🏠 Dashboard</a></li>
+      <li><a href="attendance.html">📅 Attendance</a></li>
+      <li><a href="tasks.html">✅ Tasks</a></li>
+      <li><a href="habits.html">💡 Habits</a></li>
+      <li><a href="events.html">🎉 Events</a></li>
+      <li><a href="todo.html">📝 To-Do</a></li>
+    </ul>
+  </nav>
+
+  <div id="content">
+    <header>
+      <button id="menu-toggle">☰</button>
+      <h1>Habits</h1>
+    </header>
+
+    <main>
+      <section>
+        <h2>🌱 Add Habit</h2>
+        <div class="habit-entry">
+          <input type="text" id="habit-name" placeholder="e.g., Read 30 minutes" />
+          <button onclick="addHabit()">Add Habit</button>
+        </div>
+
+        <h3>📅 Today's Habits</h3>
+        <div id="habit-list"></div>
+
+        <div id="habit-summary"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="habits.js"></script>
+</body>
+</html>

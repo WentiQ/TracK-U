@@ -1,0 +1,308 @@
+/* Reset & Body */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: #f8f9fa;
+  color: #333;
+  display: flex;
+}
+
+/* Sidebar */
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 220px;
+  height: 100%;
+  background: #2c3e50;
+  color: white;
+  transition: 0.3s ease;
+  padding-top: 1rem;
+  z-index: 1000;
+}
+
+#sidebar.active {
+  left: 0;
+}
+
+.sidebar-header {
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+#sidebar ul li {
+  padding: 0.75rem 1rem;
+}
+
+#sidebar ul li a {
+  color: white;
+  text-decoration: none;
+  display: block;
+}
+
+#sidebar ul li a:hover {
+  background: #34495e;
+}
+
+/* Content */
+#content {
+  margin-left: 0;
+  padding: 1rem;
+  flex: 1;
+  transition: margin-left 0.3s ease;
+}
+
+#sidebar.active + #content {
+  margin-left: 220px;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  background: #3498db;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+#menu-toggle {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  background: none;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.dashboard-section {
+  margin-top: 2rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.task-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.task-entry input,
+.task-entry button {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #fff;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.task-item.done span {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.habit-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.habit-entry input,
+.habit-entry button {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.habit-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.habit-item.done span {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.event-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.event-entry input,
+.event-entry select,
+.event-entry button {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.event-item {
+  background: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.event-item.attended {
+  border-left: 5px solid #2ecc71;
+}
+
+.event-item.missed {
+  border-left: 5px solid #e74c3c;
+}
+
+.event-item.canceled {
+  border-left: 5px solid #95a5a6;
+}
+
+.todo-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.todo-entry input,
+.todo-entry button {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.todo-item.done span {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.dashboard-section {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#dashboard-metrics p {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+#dashboard-total h3 {
+  color: #2c3e50;
+  margin-top: 1rem;
+  font-size: 1.25rem;
+}
+
+/* Attendance Entry Form */
+.attendance-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.attendance-entry label {
+  font-weight: bold;
+}
+
+.attendance-entry select,
+.attendance-entry button {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.attendance-entry button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.attendance-entry button:hover {
+  background-color: #2980b9;
+}
+
+/* Attendance Summary Display */
+#attendance-summary {
+  background-color: #f0f8ff;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #2c3e50;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+#attendance-summary div {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-left: 4px solid #3498db;
+  background: #fdfdfd;
+  border-radius: 4px;
+}
+
+/* Responsive layout */
+@media (min-width: 600px) {
+  .attendance-entry {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .attendance-entry label {
+    margin-right: 0.5rem;
+  }
+
+  .attendance-entry select,
+  .attendance-entry button {
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+  }
+}

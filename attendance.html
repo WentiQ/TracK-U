@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Attendance - Student Tracker</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <nav id="sidebar">
+    <div class="sidebar-header">📘 Menu</div>
+    <ul>
+      <li><a href="index.html">🏠 Dashboard</a></li>
+      <li><a href="attendance.html">📅 Attendance</a></li>
+      <li><a href="tasks.html">✅ Tasks</a></li>
+      <li><a href="habits.html">💡 Habits</a></li>
+      <li><a href="events.html">🎉 Events</a></li>
+      <li><a href="todo.html">📝 To-Do</a></li>
+    </ul>
+  </nav>
+
+  <div id="content">
+    <header>
+      <button id="menu-toggle">☰</button>
+      <h1>Attendance</h1>
+    </header>
+
+    <main>
+      <section>
+        <h2>📚 Mark Attendance</h2>
+        <div class="attendance-entry">
+          <label for="subject">Subject:</label>
+          <select id="subject">
+            <option>Math</option>
+            <option>Science</option>
+            <option>History</option>
+          </select>
+
+          <label for="status">Status:</label>
+          <select id="status">
+            <option>Present</option>
+            <option>Absent</option>
+            <option>Excused</option>
+          </select>
+
+          <button onclick="addAttendance()">Add</button>
+        </div>
+
+        <div id="attendance-summary"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="attendance.js"></script>
+</body>
+</html>
