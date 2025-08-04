@@ -108,18 +108,24 @@ function addAttendance() {
 function updateAttendanceSummary() {
   const summary = {};
   attendanceData.forEach(entry => {
-    if (!summary[entry.subject]) summary[entry.subject] = { present: 0, absent: 0, excused: 0 };
-    summary[entry.subject][entry.status.toLowerCase()]++;
+    if (!summary[entry.subject]) summary[entry.subject] = { present: 0, absent: 0, 'not taken': 0 };
+    // Support both old 'Excused' and new 'Not Taken' for backward compatibility
+    let statusKey = entry.status.toLowerCase();
+    if (statusKey === 'excused') statusKey = 'not taken';
+    summary[entry.subject][statusKey]++;
   });
 
   const div = document.getElementById('attendance-summary');
   div.innerHTML = '';
   for (let subject in summary) {
-    const { present, absent, excused } = summary[subject];
-    const total = present + absent + excused;
-    const percent = ((present / total) * 100).toFixed(1);
+    const { present, absent, 'not taken': notTaken } = summary[subject];
+    const totalCounted = present + absent; // Only count present and absent for percentage
+    let percent = '-';
+    if (totalCounted > 0) {
+      percent = ((present / totalCounted) * 100).toFixed(1);
+    }
     div.innerHTML += `
-      <div><strong>${subject}</strong> — Present: ${present}, Absent: ${absent}, Excused: ${excused}, Attendance: ${percent}%</div>
+      <div><strong>${subject}</strong> — Present: ${present}, Absent: ${absent}, Not Taken: ${notTaken}, Attendance: ${percent}%</div>
     `;
   }
 }

@@ -1,3 +1,19 @@
+#subject-list button {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: 0.25rem;
+  color: #3498db;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+#subject-list button:hover {
+  background: #eaf6fb;
+  color: #217dbb;
+}
 .modal {
   display: none; /* Hidden by default */
   position: fixed;
