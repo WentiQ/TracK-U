@@ -3,21 +3,42 @@ function getToday() {
 }
 
 function loadAttendanceScore() {
-  const data = JSON.parse(localStorage.getItem('attendanceData')) || [];
-  const summary = {};
-  data.forEach(entry => {
-    if (!summary[entry.subject]) summary[entry.subject] = { present: 0, total: 0 };
-    summary[entry.subject].total++;
-    if (entry.status === 'Present') summary[entry.subject].present++;
+  const today = getToday();
+  const todayFormatted = new Date().toLocaleDateString(); // For attendance data comparison
+  
+  // Get today's class attendance responses
+  const attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
+  const todaysClasses = attendanceData.filter(entry => entry.date === todayFormatted);
+  
+  // Get today's event responses
+  const eventResponses = JSON.parse(localStorage.getItem('eventResponses')) || [];
+  const todaysEvents = eventResponses.filter(response => response.originalDate === today);
+  
+  // Calculate attendance for classes (Present and Not Taken count as attended)
+  let classesAttended = 0;
+  let totalClasses = todaysClasses.length;
+  
+  todaysClasses.forEach(entry => {
+    if (entry.status === 'Present' || entry.status === 'Not Taken') {
+      classesAttended++;
+    }
   });
-
-  let totalPresent = 0, total = 0;
-  for (let s in summary) {
-    totalPresent += summary[s].present;
-    total += summary[s].total;
-  }
-
-  const percent = total > 0 ? ((totalPresent / total) * 100).toFixed(1) : 0;
+  
+  // Calculate attendance for events (Attended counts as attended)
+  let eventsAttended = 0;
+  let totalEvents = todaysEvents.length;
+  
+  todaysEvents.forEach(response => {
+    if (response.response === 'Attended') {
+      eventsAttended++;
+    }
+  });
+  
+  // Calculate overall attendance percentage for today
+  const totalAttended = classesAttended + eventsAttended;
+  const totalItems = totalClasses + totalEvents;
+  
+  const percent = totalItems > 0 ? ((totalAttended / totalItems) * 100).toFixed(1) : 0;
   document.getElementById('attendance-score').innerText = percent;
   return parseFloat(percent);
 }
