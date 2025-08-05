@@ -80,4 +80,172 @@ function calculateTotalScore() {
   document.getElementById('total-score').innerText = score;
 }
 
-document.addEventListener('DOMContentLoaded', calculateTotalScore);
+// Notification system for schedule events
+function loadNotifications() {
+  const scheduleEvents = JSON.parse(localStorage.getItem('scheduleEvents')) || [];
+  const respondedNotifications = JSON.parse(localStorage.getItem('respondedNotifications')) || [];
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  
+  // Get today's events that have passed their start time
+  const activeNotifications = scheduleEvents.filter(event => {
+    if (event.date !== today) return false;
+    
+    // Check if already responded
+    if (respondedNotifications.includes(event.id)) return false;
+    
+    // Check if event time has passed (for timed events) or is all-day
+    if (event.allDay) {
+      return true; // Show all-day events immediately
+    }
+    
+    if (event.startTime) {
+      const eventDateTime = new Date(`${event.date}T${event.startTime}`);
+      return now >= eventDateTime; // Show only if event time has passed
+    }
+    
+    return false;
+  });
+  
+  // Sort by time (all-day first, then by start time)
+  activeNotifications.sort((a, b) => {
+    if (a.allDay && !b.allDay) return -1;
+    if (!a.allDay && b.allDay) return 1;
+    if (a.allDay && b.allDay) return 0;
+    return (a.startTime || '').localeCompare(b.startTime || '');
+  });
+  
+  displayNotifications(activeNotifications);
+}
+
+function displayNotifications(notifications) {
+  const container = document.getElementById('notifications-container');
+  const section = document.getElementById('notifications-section');
+  
+  if (notifications.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  
+  section.style.display = 'block';
+  container.innerHTML = '';
+  
+  notifications.forEach(event => {
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = `notification-item ${event.type}-notification`;
+    
+    const timeDisplay = event.allDay ? 'All day' : 
+      event.startTime ? formatTime(event.startTime) + (event.endTime ? ` - ${formatTime(event.endTime)}` : '') : '';
+    
+    const title = event.type === 'class' && event.subject ? 
+      `${event.title} (${event.subject})` : event.title;
+    
+    notificationDiv.innerHTML = `
+      <div class="notification-header">
+        <div class="notification-title">${title}</div>
+        <div class="notification-time">${timeDisplay}</div>
+      </div>
+      <div class="notification-details">
+        ${event.location ? `📍 ${event.location}<br>` : ''}
+        ${event.description ? `${event.description}` : ''}
+      </div>
+      <div class="notification-actions">
+        ${event.type === 'class' ? `
+          <button class="notification-btn btn-present" onclick="respondToNotification('${event.id}', 'Present')">
+            ✅ Present
+          </button>
+          <button class="notification-btn btn-absent" onclick="respondToNotification('${event.id}', 'Absent')">
+            ❌ Absent
+          </button>
+          <button class="notification-btn btn-not-taken" onclick="respondToNotification('${event.id}', 'Not Taken')">
+            ⚪ Not Taken
+          </button>
+        ` : `
+          <button class="notification-btn btn-attended" onclick="respondToNotification('${event.id}', 'Attended')">
+            ✅ Attended
+          </button>
+          <button class="notification-btn btn-not-attended" onclick="respondToNotification('${event.id}', 'Not Attended')">
+            ❌ Not Attended
+          </button>
+        `}
+      </div>
+    `;
+    
+    container.appendChild(notificationDiv);
+  });
+}
+
+function respondToNotification(eventId, response) {
+  // Mark notification as responded
+  const respondedNotifications = JSON.parse(localStorage.getItem('respondedNotifications')) || [];
+  if (!respondedNotifications.includes(eventId)) {
+    respondedNotifications.push(eventId);
+    localStorage.setItem('respondedNotifications', JSON.stringify(respondedNotifications));
+  }
+  
+  // Get the event details
+  const scheduleEvents = JSON.parse(localStorage.getItem('scheduleEvents')) || [];
+  const event = scheduleEvents.find(e => e.id === eventId);
+  
+  if (event && event.type === 'class' && event.subject) {
+    // Add to attendance data for classes
+    const attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
+    const now = new Date();
+    
+    attendanceData.push({
+      subject: event.subject,
+      status: response,
+      date: now.toLocaleDateString(),
+      time: now.toLocaleTimeString()
+    });
+    
+    localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+  }
+  
+  // For events, we could store the response in a separate eventResponses storage
+  if (event && event.type === 'event') {
+    const eventResponses = JSON.parse(localStorage.getItem('eventResponses')) || [];
+    eventResponses.push({
+      eventId: eventId,
+      eventTitle: event.title,
+      response: response,
+      date: new Date().toISOString(),
+      originalDate: event.date
+    });
+    localStorage.setItem('eventResponses', JSON.stringify(eventResponses));
+  }
+  
+  // Refresh notifications and dashboard scores
+  loadNotifications();
+  calculateTotalScore();
+}
+
+function formatTime(timeString) {
+  if (!timeString) return '';
+  const [hours, minutes] = timeString.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minutes} ${ampm}`;
+}
+
+// Clear old responded notifications daily
+function clearOldNotifications() {
+  const today = new Date().toISOString().split('T')[0];
+  const lastClearDate = localStorage.getItem('lastNotificationClear');
+  
+  if (lastClearDate !== today) {
+    // Clear responded notifications from previous days
+    localStorage.removeItem('respondedNotifications');
+    localStorage.setItem('lastNotificationClear', today);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  clearOldNotifications();
+  calculateTotalScore();
+  loadNotifications();
+  
+  // Refresh notifications every minute
+  setInterval(loadNotifications, 60000);
+});
