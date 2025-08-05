@@ -1,3 +1,88 @@
+// --- Modal for Attendance Data Deletion ---
+function showDeleteAttendanceModal(subject, onConfirm) {
+  let modal = document.getElementById('delete-attendance-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'delete-attendance-modal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <span class="close" onclick="closeDeleteAttendanceModal()">&times;</span>
+        <h3>Delete Attendance Data</h3>
+        <p>Type the subject name (<b>${subject}</b>) to confirm:</p>
+        <input type="text" id="confirm-subject-input" placeholder="Subject name" />
+        <p>Enter your password:</p>
+        <input type="password" id="confirm-password-input" placeholder="Password" />
+        <button id="confirm-delete-btn">Delete</button>
+        <div id="delete-attendance-message"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  } else {
+    modal.querySelector('b').textContent = subject;
+    modal.querySelector('#confirm-subject-input').value = '';
+    modal.querySelector('#confirm-password-input').value = '';
+    modal.querySelector('#delete-attendance-message').textContent = '';
+  }
+  modal.style.display = 'block';
+  modal.querySelector('#confirm-delete-btn').onclick = function() {
+    const subInput = modal.querySelector('#confirm-subject-input').value.trim();
+    const passInput = modal.querySelector('#confirm-password-input').value;
+    const msg = modal.querySelector('#delete-attendance-message');
+    if (subInput !== subject) {
+      msg.textContent = 'Subject name does not match.';
+      msg.style.color = 'red';
+      return;
+    }
+    const storedPass = localStorage.getItem('userPassword') || '';
+    if (storedPass && passInput !== storedPass) {
+      msg.textContent = 'Password incorrect.';
+      msg.style.color = 'red';
+      return;
+    }
+    msg.textContent = '';
+    closeDeleteAttendanceModal();
+    onConfirm();
+  };
+}
+
+function closeDeleteAttendanceModal() {
+  const modal = document.getElementById('delete-attendance-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// --- Long Press Delete on Attendance Summary ---
+function addLongPressDeleteToSummary() {
+  const div = document.getElementById('attendance-summary');
+  div.querySelectorAll('div').forEach(summaryDiv => {
+    let timeout;
+    let pressed = false;
+    summaryDiv.onmousedown = function(e) {
+      pressed = true;
+      timeout = setTimeout(() => {
+        pressed = false;
+        const subject = summaryDiv.querySelector('strong').textContent;
+        showDeleteAttendanceModal(subject, function() {
+          // Delete all attendance data for this subject
+          attendanceData = attendanceData.filter(entry => entry.subject !== subject);
+          saveAttendance();
+          updateAttendanceSummary();
+        });
+      }, 800); // 800ms for long press
+    };
+    summaryDiv.onmouseup = summaryDiv.onmouseleave = function() {
+      if (timeout) clearTimeout(timeout);
+      pressed = false;
+    };
+  });
+}
+
+// Call after updating summary
+const origUpdateAttendanceSummary = updateAttendanceSummary;
+updateAttendanceSummary = function() {
+  origUpdateAttendanceSummary();
+  addLongPressDeleteToSummary();
+};
 // --- Subject List Popup Logic ---
 function openSubjectListPopup() {
   document.getElementById('subject-list-popup').style.display = 'block';
@@ -98,9 +183,11 @@ function deleteSubject(index) {
 function addAttendance() {
   const subject = document.getElementById('subject').value;
   const status = document.getElementById('status').value;
-  const date = new Date().toLocaleDateString();
+  const now = new Date();
+  const date = now.toLocaleDateString();
+  const time = now.toLocaleTimeString();
 
-  attendanceData.push({ subject, status, date });
+  attendanceData.push({ subject, status, date, time });
   updateAttendanceSummary();
   saveAttendance();
 }
@@ -125,7 +212,9 @@ function updateAttendanceSummary() {
       percent = ((present / totalCounted) * 100).toFixed(1);
     }
     div.innerHTML += `
-      <div><strong>${subject}</strong> — Present: ${present}, Absent: ${absent}, Not Taken: ${notTaken}, Attendance: ${percent}%</div>
+      <div class="attendance-summary-item" style="cursor:pointer;">
+        <strong onclick="window.location.href='subject.html?subject=' + encodeURIComponent('${subject}')">${subject}</strong> — Present: ${present}, Absent: ${absent}, Not Taken: ${notTaken}, Attendance: ${percent}%
+      </div>
     `;
   }
 }

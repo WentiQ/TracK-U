@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Habits - Student Tracker</title>
+  <title>Settings - Student Tracker</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-
-  <!-- Sidebar Navigation -->
   <nav id="sidebar">
     <div class="sidebar-header">📘 Menu</div>
     <ul>
@@ -21,30 +19,26 @@
       <li><a href="settings.html">⚙️ Settings</a></li>
     </ul>
   </nav>
-
   <div id="content">
     <header>
       <button id="menu-toggle">☰</button>
-      <h1>Habits</h1>
+      <h1>Settings</h1>
     </header>
-
     <main>
-      <section>
-        <h2>🌱 Add Habit</h2>
-        <div class="habit-entry">
-          <input type="text" id="habit-name" placeholder="e.g., Read 30 minutes" />
-          <button onclick="addHabit()">Add Habit</button>
-        </div>
-
-        <h3>📅 Today's Habits</h3>
-        <div id="habit-list"></div>
-
-        <div id="habit-summary"></div>
+      <section class="settings-section">
+        <h2>🔒 Password Management</h2>
+        <form id="password-form">
+          <label for="current-password">Current Password:</label>
+          <input type="password" id="current-password" autocomplete="current-password" />
+          <label for="new-password">New Password:</label>
+          <input type="password" id="new-password" autocomplete="new-password" />
+          <button type="submit">Update Password</button>
+          <div id="password-message"></div>
+        </form>
       </section>
     </main>
   </div>
-
   <script src="script.js"></script>
-  <script src="habits.js"></script>
+  <script src="settings.js"></script>
 </body>
 </html>
