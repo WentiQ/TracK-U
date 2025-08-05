@@ -203,17 +203,40 @@ function updateAttendanceSummary() {
   });
 
   const div = document.getElementById('attendance-summary');
+  // Use flexbox for card layout, min 3 per row
+  div.style.display = 'flex';
+  div.style.flexWrap = 'wrap';
+  div.style.gap = '12px';
+  div.style.justifyContent = 'flex-start';
   div.innerHTML = '';
   for (let subject in summary) {
     const { present, absent, 'not taken': notTaken } = summary[subject];
-    const totalCounted = present + absent; // Only count present and absent for percentage
+    const totalCounted = present + absent;
     let percent = '-';
     if (totalCounted > 0) {
       percent = ((present / totalCounted) * 100).toFixed(1);
     }
     div.innerHTML += `
-      <div class="attendance-summary-item" style="cursor:pointer;">
-        <strong onclick="window.location.href='subject.html?subject=' + encodeURIComponent('${subject}')">${subject}</strong> — Present: ${present}, Absent: ${absent}, Not Taken: ${notTaken}, Attendance: ${percent}%
+      <div class="attendance-summary-item" style="
+        cursor:pointer;
+        flex: 1 1 15%;
+        min-width: 110px;
+        max-width: 160px;
+        margin: 0;
+        padding: 10px 8px 8px 8px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        font-size: 0.97rem;
+        line-height: 1.4;
+        box-sizing: border-box;
+        margin-bottom: 0;
+      ">
+        <strong style="font-size:1.01rem; color:#2c3e50; display:block; margin-bottom:5px; cursor:pointer;" onclick="window.location.href='subject.html?subject=' + encodeURIComponent('${subject}')">${subject}</strong>
+        <div>Present: <b style='color:#27ae60;'>${present}</b></div>
+        <div>Absent: <b style='color:#e74c3c;'>${absent}</b></div>
+        <div>Not Taken: <b style='color:#7f8c8d;'>${notTaken}</b></div>
+        <div>Attendance: <b style='color:#2980b9;'>${percent}%</b></div>
       </div>
     `;
   }

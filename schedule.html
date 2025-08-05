@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <button id="back-btn">Back</button>
+    <h1>Schedule</h1>
+  </header>
+  <main>
+    <section id="schedule-section">
+      <h2>Your Weekly Schedule</h2>
+      <table id="schedule-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Time</th>
+            <th>Subject</th>
+            <th>Notes</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Schedule rows will be inserted here by JS -->
+        </tbody>
+      </table>
+      <button id="add-schedule-btn">Add Schedule</button>
+    </section>
+    <section id="add-schedule-section" style="display:none;">
+      <h2>Add/Edit Schedule</h2>
+      <form id="schedule-form">
+        <label>Day: <select id="day-input" required>
+          <option value="">Select</option>
+          <option>Monday</option>
+          <option>Tuesday</option>
+          <option>Wednesday</option>
+          <option>Thursday</option>
+          <option>Friday</option>
+          <option>Saturday</option>
+          <option>Sunday</option>
+        </select></label>
+        <label>Time: <input type="time" id="time-input" required></label>
+        <label>Subject: <input type="text" id="subject-input" required></label>
+        <label>Notes: <input type="text" id="notes-input"></label>
+        <button type="submit">Save</button>
+        <button type="button" id="cancel-btn">Cancel</button>
+      </form>
+    </section>
+  </main>
+  <script src="schedule.js"></script>
+</body>
+</html>
