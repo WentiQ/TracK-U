@@ -3,54 +3,551 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schedule</title>
+  <title>Schedule - Student Tracker</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .schedule-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .date-navigation {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .nav-btn {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .nav-btn:hover {
+      background: #e0e0e0;
+    }
+    
+    .current-date {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 15px;
+      min-width: 200px;
+      text-align: center;
+    }
+    
+    .add-event-btn {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .add-event-btn:hover {
+      background: #3367d6;
+    }
+    
+    .agenda-view {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .agenda-day {
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .agenda-day:last-child {
+      border-bottom: none;
+    }
+    
+    .day-header {
+      background: #f8f9fa;
+      padding: 12px 20px;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .day-events {
+      padding: 0;
+    }
+    
+    .event-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .event-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .event-item:last-child {
+      border-bottom: none;
+    }
+    
+    .event-time {
+      min-width: 80px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .event-details {
+      flex: 1;
+      margin-left: 15px;
+    }
+    
+    .event-title {
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 2px;
+    }
+    
+    .event-location {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .event-color {
+      width: 4px;
+      height: 40px;
+      border-radius: 2px;
+      margin-right: 12px;
+    }
+    
+    .no-events {
+      padding: 40px 20px;
+      text-align: center;
+      color: #666;
+      font-style: italic;
+    }
+    
+    /* Event Creation Modal */
+    .event-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+    
+    .event-modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 540px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .close-btn:hover {
+      background: #f0f0f0;
+    }
+    
+    .modal-body {
+      padding: 24px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #4285f4;
+      box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+    }
+    
+    .form-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      background: white;
+      box-sizing: border-box;
+    }
+    
+    .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+      box-sizing: border-box;
+    }
+    
+    .color-picker {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .color-option {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: border-color 0.2s;
+    }
+    
+    .color-option.selected {
+      border-color: #333;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #333;
+      border-color: #ddd;
+    }
+    
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+    
+    .btn-primary {
+      background: #4285f4;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #3367d6;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #c82333;
+    }
+    
+    @media (max-width: 768px) {
+      .schedule-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .date-navigation {
+        justify-content: center;
+      }
+      
+      .current-date {
+        margin: 10px 0;
+      }
+      
+      .event-modal-content {
+        width: 95%;
+        margin: 20px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <button id="back-btn">Back</button>
-    <h1>Schedule</h1>
-  </header>
-  <main>
-    <section id="schedule-section">
-      <h2>Your Weekly Schedule</h2>
-      <table id="schedule-table">
-        <thead>
-          <tr>
-            <th>Day</th>
-            <th>Time</th>
-            <th>Subject</th>
-            <th>Notes</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Schedule rows will be inserted here by JS -->
-        </tbody>
-      </table>
-      <button id="add-schedule-btn">Add Schedule</button>
-    </section>
-    <section id="add-schedule-section" style="display:none;">
-      <h2>Add/Edit Schedule</h2>
-      <form id="schedule-form">
-        <label>Day: <select id="day-input" required>
-          <option value="">Select</option>
-          <option>Monday</option>
-          <option>Tuesday</option>
-          <option>Wednesday</option>
-          <option>Thursday</option>
-          <option>Friday</option>
-          <option>Saturday</option>
-          <option>Sunday</option>
-        </select></label>
-        <label>Time: <input type="time" id="time-input" required></label>
-        <label>Subject: <input type="text" id="subject-input" required></label>
-        <label>Notes: <input type="text" id="notes-input"></label>
-        <button type="submit">Save</button>
-        <button type="button" id="cancel-btn">Cancel</button>
+  <!-- Sidebar Navigation -->
+  <nav id="sidebar">
+    <div class="sidebar-header">📘 Menu</div>
+    <ul>
+      <li><a href="index.html">🏠 Dashboard</a></li>
+      <li><a href="attendance.html">📅 Attendance</a></li>
+      <li><a href="tasks.html">✅ Tasks</a></li>
+      <li><a href="habits.html">💡 Habits</a></li>
+      <li><a href="events.html">🎉 Events</a></li>
+      <li><a href="todo.html">📝 To-Do</a></li>
+      <li><a href="schedule.html">📅 Schedule</a></li>
+      <li><a href="settings.html">⚙️ Settings</a></li>
+    </ul>
+  </nav>
+
+  <div id="content">
+    <header>
+      <button id="menu-toggle">☰</button>
+      <h1>Schedule</h1>
+    </header>
+
+    <main>
+      <div class="schedule-container">
+        <div class="schedule-header">
+          <div class="date-navigation">
+            <button class="nav-btn" id="prev-week">‹ Previous</button>
+            <button class="nav-btn" id="today-btn">Today</button>
+            <button class="nav-btn" id="next-week">Next ›</button>
+            <div class="current-date" id="current-date-range"></div>
+          </div>
+          <button class="add-event-btn" id="add-event-btn">+ Create Event</button>
+        </div>
+
+        <div class="agenda-view" id="agenda-view">
+          <!-- Agenda content will be dynamically generated -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Event Creation/Edit Modal -->
+  <div class="event-modal" id="event-modal">
+    <div class="event-modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Create Event</h3>
+        <button class="close-btn" id="close-modal">&times;</button>
+      </div>
+      
+      <form class="modal-body" id="event-form">
+        <div class="form-group">
+          <label class="form-label" for="event-title">Event Title *</label>
+          <input type="text" class="form-input" id="event-title" placeholder="Add title" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="event-type">Event Type</label>
+          <select class="form-select" id="event-type">
+            <option value="class">Class</option>
+            <option value="event">General Event</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="subject-group">
+          <label class="form-label" for="event-subject">Subject</label>
+          <select class="form-select" id="event-subject">
+            <!-- Populated from attendance subjects -->
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="event-date">Date *</label>
+            <input type="date" class="form-input" id="event-date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="start-time">Start Time *</label>
+            <input type="time" class="form-input" id="start-time" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="end-time">End Time *</label>
+            <input type="time" class="form-input" id="end-time" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="event-location">Location</label>
+          <input type="text" class="form-input" id="event-location" placeholder="Add location">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="event-description">Description</label>
+          <textarea class="form-textarea" id="event-description" placeholder="Add description"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <div class="color-picker">
+            <div class="color-option selected" data-color="#4285f4" style="background: #4285f4;"></div>
+            <div class="color-option" data-color="#db4437" style="background: #db4437;"></div>
+            <div class="color-option" data-color="#0f9d58" style="background: #0f9d58;"></div>
+            <div class="color-option" data-color="#f4b400" style="background: #f4b400;"></div>
+            <div class="color-option" data-color="#ab47bc" style="background: #ab47bc;"></div>
+            <div class="color-option" data-color="#00acc1" style="background: #00acc1;"></div>
+            <div class="color-option" data-color="#ff7043" style="background: #ff7043;"></div>
+            <div class="color-option" data-color="#9e9e9e" style="background: #9e9e9e;"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="all-day">
+            <label for="all-day">All day</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="repeat-option">Repeat</label>
+          <select class="form-select" id="repeat-option">
+            <option value="none">Does not repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="custom">Custom...</option>
+          </select>
+  <!-- Custom Recurrence Modal -->
+  <div class="event-modal" id="custom-recurrence-modal" style="display:none;">
+    <div class="event-modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Custom Recurrence</h3>
+        <button class="close-btn" id="close-custom-recurrence">&times;</button>
+      </div>
+      <form class="modal-body" id="custom-recurrence-form">
+        <div class="form-group">
+          <label class="form-label">Repeat</label>
+          <div class="form-row">
+            <input type="number" min="1" id="custom-interval" class="form-input" value="1" style="width:70px;">&nbsp;
+            <select id="custom-frequency" class="form-select" style="width:140px;">
+              <option value="day">day(s)</option>
+              <option value="week">week(s)</option>
+              <option value="month">month(s)</option>
+              <option value="year">year(s)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="custom-weekdays-group" style="display:none;">
+          <label class="form-label">Repeat on</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label><input type="checkbox" value="0" class="custom-weekday"> Sun</label>
+            <label><input type="checkbox" value="1" class="custom-weekday"> Mon</label>
+            <label><input type="checkbox" value="2" class="custom-weekday"> Tue</label>
+            <label><input type="checkbox" value="3" class="custom-weekday"> Wed</label>
+            <label><input type="checkbox" value="4" class="custom-weekday"> Thu</label>
+            <label><input type="checkbox" value="5" class="custom-weekday"> Fri</label>
+            <label><input type="checkbox" value="6" class="custom-weekday"> Sat</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ends</label>
+          <div>
+            <label><input type="radio" name="custom-end" value="never" checked> Never</label><br>
+            <label><input type="radio" name="custom-end" value="after"> After <input type="number" min="1" id="custom-end-after" class="form-input" value="10" style="width:70px;display:inline-block;"> occurrences</label><br>
+            <label><input type="radio" name="custom-end" value="on"> On <input type="date" id="custom-end-on" class="form-input" style="width:160px;display:inline-block;"></label>
+          </div>
+        </div>
       </form>
-    </section>
-  </main>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-custom-recurrence">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-custom-recurrence">Save</button>
+      </div>
+    </div>
+  </div>
+        </div>
+      </form>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="delete-event-btn" style="display: none;">Delete</button>
+        <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-event-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
   <script src="schedule.js"></script>
 </body>
 </html>
