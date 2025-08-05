@@ -103,7 +103,67 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Export as PDF
   document.getElementById('export-pdf-btn').onclick = function() {
-    const content = document.querySelector('main');
-    html2pdf().from(content).save(`${subject}_attendance.pdf`);
+    // Create a custom container for PDF export
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.padding = '24px';
+    pdfContainer.style.fontFamily = 'Arial, sans-serif';
+    pdfContainer.style.width = '100%';
+
+    // Summary section
+    const summary = document.createElement('div');
+    summary.style.marginBottom = '18px';
+    summary.style.fontSize = '1.1rem';
+    summary.innerHTML = `
+      <div style="font-weight:bold;font-size:1.3rem;margin-bottom:8px;">${subject} Attendance Summary</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:4px;">
+        <span>Present: <b>${statusCounts['Present']}</b></span>
+        <span>Absent: <b>${statusCounts['Absent']}</b></span>
+        <span>Not Taken: <b>${statusCounts['Not Taken']}</b></span>
+        <span>Attendance %: <b>${percent}</b></span>
+      </div>
+    `;
+    pdfContainer.appendChild(summary);
+
+    // Table section
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.fontSize = '1rem';
+    table.innerHTML = `
+      <thead>
+        <tr style="background:#f4f4f4;">
+          <th style="border:1px solid #bbb;padding:8px 4px;text-align:left;">Date</th>
+          <th style="border:1px solid #bbb;padding:8px 4px;text-align:left;">Time</th>
+          <th style="border:1px solid #bbb;padding:8px 4px;text-align:left;">Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const pdfTbody = table.querySelector('tbody');
+    subjectData.forEach(entry => {
+      let date = entry.date, time = '';
+      if (date.includes(',')) {
+        [date, time] = date.split(',').map(s => s.trim());
+      } else if (entry.time) {
+        time = entry.time;
+      }
+      const status = entry.status === 'Excused' ? 'Not Taken' : entry.status;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="border:1px solid #bbb;padding:6px 4px;">${date}</td>
+        <td style="border:1px solid #bbb;padding:6px 4px;">${time || '-'}</td>
+        <td style="border:1px solid #bbb;padding:6px 4px;">${status}</td>
+      `;
+      pdfTbody.appendChild(tr);
+    });
+    pdfContainer.appendChild(table);
+
+    // Export using html2pdf
+    html2pdf().set({
+      margin: 0,
+      filename: `${subject}_attendance.pdf`,
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
+    }).from(pdfContainer).save();
   };
 });
