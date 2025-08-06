@@ -87,6 +87,8 @@ function isSameDay(date1, date2) {
 
 // Event listeners setup
 function setupEventListeners() {
+  // Event type filter
+  document.getElementById('event-type-filter').addEventListener('change', renderAgenda);
   // Navigation
   document.getElementById('prev-week').addEventListener('click', () => {
     currentWeekStart.setDate(currentWeekStart.getDate() - 7);
@@ -725,8 +727,15 @@ function renderAgenda() {
   const agendaView = document.getElementById('agenda-view');
   agendaView.innerHTML = '';
 
-  const weekEvents = getWeekEvents();
-  
+  // Get filter value
+  const filter = document.getElementById('event-type-filter')?.value || 'all';
+  let weekEvents = getWeekEvents();
+  if (filter === 'class') {
+    weekEvents = weekEvents.filter(e => e.type === 'class');
+  } else if (filter === 'event') {
+    weekEvents = weekEvents.filter(e => e.type === 'event');
+  }
+
   if (weekEvents.length === 0) {
     agendaView.innerHTML = '<div class="no-events">No events this week</div>';
     return;

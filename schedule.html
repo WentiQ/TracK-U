@@ -389,13 +389,20 @@
     <main>
       <div class="schedule-container">
         <div class="schedule-header">
-          <div class="date-navigation">
-            <button class="nav-btn" id="prev-week">‹ Previous</button>
-            <button class="nav-btn" id="today-btn">Today</button>
-            <button class="nav-btn" id="next-week">Next ›</button>
-            <div class="current-date" id="current-date-range"></div>
-          </div>
+        <div class="date-navigation">
+          <button class="nav-btn" id="prev-week">‹ Previous</button>
+          <button class="nav-btn" id="today-btn">Today</button>
+          <button class="nav-btn" id="next-week">Next ›</button>
+          <div class="current-date" id="current-date-range"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <select id="event-type-filter" class="form-select" style="min-width: 140px;">
+            <option value="all">All</option>
+            <option value="class">Classes Only</option>
+            <option value="event">Events Only</option>
+          </select>
           <button class="add-event-btn" id="add-event-btn">+ Create Event</button>
+        </div>
         </div>
 
         <div class="agenda-view" id="agenda-view">

@@ -17,7 +17,6 @@ function loadAttendanceScore() {
   // Calculate attendance for classes (Present and Not Taken count as attended, Cancelled classes are excluded)
   let classesAttended = 0;
   let totalClasses = 0;
-  
   todaysClasses.forEach(entry => {
     if (entry.status !== 'Cancelled') {
       totalClasses++;
@@ -26,11 +25,10 @@ function loadAttendanceScore() {
       }
     }
   });
-  
+
   // Calculate attendance for events (Attended counts as attended, Cancelled events are excluded)
   let eventsAttended = 0;
   let totalEvents = 0;
-  
   todaysEvents.forEach(response => {
     if (response.response !== 'Cancelled') {
       totalEvents++;
@@ -39,11 +37,10 @@ function loadAttendanceScore() {
       }
     }
   });
-  
+
   // Calculate overall attendance percentage for today
   const totalAttended = classesAttended + eventsAttended;
   const totalItems = totalClasses + totalEvents;
-  
   const percent = totalItems > 0 ? ((totalAttended / totalItems) * 100).toFixed(1) : 0;
   document.getElementById('attendance-score').innerText = percent;
   return parseFloat(percent);
