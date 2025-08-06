@@ -72,7 +72,10 @@ function addLongPressDeleteToSummary() {
     
     // Function to start long press timer
     function startLongPress(e) {
-      e.preventDefault(); // Prevent text selection and other default behaviors
+      // Only prevent default for long press areas, not for clickable elements
+      if (e.target.tagName !== 'STRONG') {
+        e.preventDefault(); // Prevent text selection and other default behaviors
+      }
       pressed = true;
       timeout = setTimeout(handleLongPress, 800); // 800ms for long press
     }
@@ -84,12 +87,22 @@ function addLongPressDeleteToSummary() {
     }
     
     // Mouse events (for desktop)
-    summaryDiv.onmousedown = startLongPress;
+    summaryDiv.onmousedown = function(e) {
+      // Don't start long press if clicking on the subject name (strong element)
+      if (e.target.tagName !== 'STRONG') {
+        startLongPress(e);
+      }
+    };
     summaryDiv.onmouseup = cancelLongPress;
     summaryDiv.onmouseleave = cancelLongPress;
     
     // Touch events (for mobile)
-    summaryDiv.ontouchstart = startLongPress;
+    summaryDiv.ontouchstart = function(e) {
+      // Don't start long press if touching the subject name (strong element)
+      if (e.target.tagName !== 'STRONG') {
+        startLongPress(e);
+      }
+    };
     summaryDiv.ontouchend = cancelLongPress;
     summaryDiv.ontouchcancel = cancelLongPress;
     summaryDiv.ontouchmove = cancelLongPress; // Cancel if user moves finger
