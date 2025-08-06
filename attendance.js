@@ -57,23 +57,57 @@ function addLongPressDeleteToSummary() {
   div.querySelectorAll('div').forEach(summaryDiv => {
     let timeout;
     let pressed = false;
-    summaryDiv.onmousedown = function(e) {
+    
+    // Function to handle long press action
+    function handleLongPress() {
+      pressed = false;
+      const subject = summaryDiv.querySelector('strong').textContent;
+      showDeleteAttendanceModal(subject, function() {
+        // Delete all attendance data for this subject
+        attendanceData = attendanceData.filter(entry => entry.subject !== subject);
+        saveAttendance();
+        updateAttendanceSummary();
+      });
+    }
+    
+    // Function to start long press timer
+    function startLongPress(e) {
+      e.preventDefault(); // Prevent text selection and other default behaviors
       pressed = true;
-      timeout = setTimeout(() => {
-        pressed = false;
-        const subject = summaryDiv.querySelector('strong').textContent;
-        showDeleteAttendanceModal(subject, function() {
-          // Delete all attendance data for this subject
-          attendanceData = attendanceData.filter(entry => entry.subject !== subject);
-          saveAttendance();
-          updateAttendanceSummary();
-        });
-      }, 800); // 800ms for long press
-    };
-    summaryDiv.onmouseup = summaryDiv.onmouseleave = function() {
+      timeout = setTimeout(handleLongPress, 800); // 800ms for long press
+    }
+    
+    // Function to cancel long press
+    function cancelLongPress() {
       if (timeout) clearTimeout(timeout);
       pressed = false;
-    };
+    }
+    
+    // Mouse events (for desktop)
+    summaryDiv.onmousedown = startLongPress;
+    summaryDiv.onmouseup = cancelLongPress;
+    summaryDiv.onmouseleave = cancelLongPress;
+    
+    // Touch events (for mobile)
+    summaryDiv.ontouchstart = startLongPress;
+    summaryDiv.ontouchend = cancelLongPress;
+    summaryDiv.ontouchcancel = cancelLongPress;
+    summaryDiv.ontouchmove = cancelLongPress; // Cancel if user moves finger
+    
+    // Add visual feedback for touch
+    summaryDiv.addEventListener('touchstart', function() {
+      this.style.backgroundColor = '#e8e8e8';
+    });
+    
+    summaryDiv.addEventListener('touchend', function() {
+      setTimeout(() => {
+        this.style.backgroundColor = '#f8f9fa';
+      }, 100);
+    });
+    
+    summaryDiv.addEventListener('touchcancel', function() {
+      this.style.backgroundColor = '#f8f9fa';
+    });
   });
 }
 
