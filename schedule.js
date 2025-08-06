@@ -594,10 +594,50 @@ function getWeekEvents() {
   const weekEnd = new Date(currentWeekStart);
   weekEnd.setDate(currentWeekStart.getDate() + 6);
   weekEnd.setHours(23, 59, 59, 999);
+  
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
 
   return events.filter(event => {
     const eventDate = new Date(event.date);
-    return eventDate >= currentWeekStart && eventDate <= weekEnd;
+    
+    // Check if event is within the current week
+    if (eventDate < currentWeekStart || eventDate > weekEnd) {
+      return false;
+    }
+    
+    // For today's events, check if the time has passed
+    if (event.date === today) {
+      // If it's an all-day event, always show it (until the day ends)
+      if (event.allDay) {
+        return true;
+      }
+      
+      // If event has an end time, check if it has completely passed
+      if (event.endTime) {
+        const eventEndDateTime = new Date(`${event.date}T${event.endTime}`);
+        return now <= eventEndDateTime;
+      }
+      
+      // If event only has start time, check if it has started (give some buffer time)
+      if (event.startTime) {
+        const eventStartDateTime = new Date(`${event.date}T${event.startTime}`);
+        // Add 2 hours buffer after start time for events without end time
+        const eventEndEstimate = new Date(eventStartDateTime.getTime() + (2 * 60 * 60 * 1000));
+        return now <= eventEndEstimate;
+      }
+      
+      // Events without time specifications are treated as all-day
+      return true;
+    }
+    
+    // For future dates, always show the event
+    if (event.date > today) {
+      return true;
+    }
+    
+    // For past dates, don't show the event
+    return false;
   });
 }
 

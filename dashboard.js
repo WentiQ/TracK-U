@@ -14,23 +14,29 @@ function loadAttendanceScore() {
   const eventResponses = JSON.parse(localStorage.getItem('eventResponses')) || [];
   const todaysEvents = eventResponses.filter(response => response.originalDate === today);
   
-  // Calculate attendance for classes (Present and Not Taken count as attended)
+  // Calculate attendance for classes (Present and Not Taken count as attended, Cancelled classes are excluded)
   let classesAttended = 0;
-  let totalClasses = todaysClasses.length;
+  let totalClasses = 0;
   
   todaysClasses.forEach(entry => {
-    if (entry.status === 'Present' || entry.status === 'Not Taken') {
-      classesAttended++;
+    if (entry.status !== 'Cancelled') {
+      totalClasses++;
+      if (entry.status === 'Present' || entry.status === 'Not Taken') {
+        classesAttended++;
+      }
     }
   });
   
-  // Calculate attendance for events (Attended counts as attended)
+  // Calculate attendance for events (Attended counts as attended, Cancelled events are excluded)
   let eventsAttended = 0;
-  let totalEvents = todaysEvents.length;
+  let totalEvents = 0;
   
   todaysEvents.forEach(response => {
-    if (response.response === 'Attended') {
-      eventsAttended++;
+    if (response.response !== 'Cancelled') {
+      totalEvents++;
+      if (response.response === 'Attended') {
+        eventsAttended++;
+      }
     }
   });
   
@@ -181,12 +187,18 @@ function displayNotifications(notifications) {
           <button class="notification-btn btn-not-taken" onclick="respondToNotification('${event.id}', 'Not Taken')">
             ⚪ Not Taken
           </button>
+          <button class="notification-btn btn-cancelled" onclick="respondToNotification('${event.id}', 'Cancelled')">
+            🚫 Cancelled
+          </button>
         ` : `
           <button class="notification-btn btn-attended" onclick="respondToNotification('${event.id}', 'Attended')">
             ✅ Attended
           </button>
           <button class="notification-btn btn-not-attended" onclick="respondToNotification('${event.id}', 'Not Attended')">
             ❌ Not Attended
+          </button>
+          <button class="notification-btn btn-cancelled" onclick="respondToNotification('${event.id}', 'Cancelled')">
+            🚫 Cancelled
           </button>
         `}
       </div>
