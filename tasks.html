@@ -33,8 +33,16 @@
       <section>
         <h2>📌 Add Task</h2>
         <div class="task-entry">
-          <input type="text" id="task-title" placeholder="Task title (e.g., Homework)" />
-          <input type="date" id="task-due" />
+          <input type="text" id="task-title" placeholder="Task title (e.g., Homework)" required />
+          <input type="date" id="task-due" required />
+          <input type="time" id="task-due-time" required />
+          <input type="text" id="task-min-time" placeholder="Min time: 30m, 2h, 1:30, 2:30:00" title="Format: 30m (minutes), 2h (hours), 1:30 (hours:minutes), 2:30:00 (days:hours:minutes), or just numbers" required />
+          <select id="task-importance" required>
+            <option value="optional">Optional (Avoidable/Eliminatable)</option>
+            <option value="low" selected>Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
           <button onclick="addTask()">Add Task</button>
         </div>
 

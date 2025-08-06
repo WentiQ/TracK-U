@@ -3,6 +3,61 @@
   filter: grayscale(0.5);
   transition: opacity 0.2s;
 }
+
+.task-details {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.urgency-tag, .importance-tag {
+  display: inline-block;
+  margin: 2px;
+}
+
+.task-notification {
+  border-left: 4px solid #FF6B6B;
+}
+
+.notification-item {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.notification-title {
+  font-weight: bold;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.notification-details {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.notification-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
 /* Modal for Attendance Data Deletion */
 #delete-attendance-modal.modal {
   display: none;

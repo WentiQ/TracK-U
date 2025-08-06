@@ -104,7 +104,7 @@ function calculateTotalScore() {
   document.getElementById('total-score').innerText = score;
 }
 
-// Notification system for schedule events
+// Notification system for schedule events and tasks
 function loadNotifications() {
   const scheduleEvents = JSON.parse(localStorage.getItem('scheduleEvents')) || [];
   const respondedNotifications = JSON.parse(localStorage.getItem('respondedNotifications')) || [];
@@ -131,6 +131,11 @@ function loadNotifications() {
     return false;
   });
   
+  // Get urgent tasks
+  const urgentTasks = (typeof getUrgentTasks === 'function') ? getUrgentTasks() : 
+                     (window.getUrgentTasks && typeof window.getUrgentTasks === 'function') ? window.getUrgentTasks() : 
+                     getUrgentTasks();
+  
   // Sort by time (all-day first, then by start time)
   activeNotifications.sort((a, b) => {
     if (a.allDay && !b.allDay) return -1;
@@ -139,14 +144,14 @@ function loadNotifications() {
     return (a.startTime || '').localeCompare(b.startTime || '');
   });
   
-  displayNotifications(activeNotifications);
+  displayNotifications(activeNotifications, urgentTasks);
 }
 
-function displayNotifications(notifications) {
+function displayNotifications(notifications, urgentTasks = []) {
   const container = document.getElementById('notifications-container');
   const section = document.getElementById('notifications-section');
   
-  if (notifications.length === 0) {
+  if (notifications.length === 0 && urgentTasks.length === 0) {
     section.style.display = 'none';
     return;
   }
@@ -154,6 +159,7 @@ function displayNotifications(notifications) {
   section.style.display = 'block';
   container.innerHTML = '';
   
+  // Display schedule notifications
   notifications.forEach(event => {
     const notificationDiv = document.createElement('div');
     notificationDiv.className = `notification-item ${event.type}-notification`;
@@ -202,6 +208,152 @@ function displayNotifications(notifications) {
     `;
     
     container.appendChild(notificationDiv);
+  });
+  
+  // Display task notifications
+  urgentTasks.forEach((task, index) => {
+    const taskIndex = JSON.parse(localStorage.getItem('taskData')).findIndex(t => 
+      t.title === task.title && t.due === task.due && t.dueTime === task.dueTime
+    );
+    
+    if (taskIndex === -1) return;
+    
+    // Get urgency using local function
+    function getTaskUrgency(task) {
+      if (task.completed) return null;
+      
+      const now = new Date();
+      const deadline = new Date(`${task.due}T${task.dueTime}`);
+      const timeLeft = (deadline - now) / (1000 * 60 * 60); // hours
+      const minTime = task.minTime || 1;
+      
+      if (timeLeft < 0) {
+        return { level: 'overdue', color: '#8B0000', text: 'OVERDUE' };
+      } else if (timeLeft <= minTime) {
+        return { level: 'very-urgent', color: '#FF0000', text: 'VERY URGENT' };
+      } else if (timeLeft <= minTime * 2) {
+        return { level: 'urgent-red', color: '#DC143C', text: 'URGENT' };
+      } else if (timeLeft <= minTime * 4) {
+        return { level: 'urgent-green', color: '#228B22', text: 'URGENT' };
+      }
+      
+      return null;
+    }
+    
+    const urgency = getTaskUrgency(task);
+    if (!urgency) return;
+    
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = 'notification-item task-notification';
+    
+    const deadline = new Date(`${task.due}T${task.dueTime}`);
+    const timeLeft = Math.max(0, (deadline - new Date()) / (1000 * 60 * 60));
+    
+    // Format minimum time
+    function formatMinTime(totalHours) {
+      if (totalHours >= 24) {
+        const days = Math.floor(totalHours / 24);
+        const hours = Math.floor(totalHours % 24);
+        const minutes = Math.round((totalHours % 1) * 60);
+        if (minutes === 0 && hours === 0) return `${days}d`;
+        if (minutes === 0) return `${days}d ${hours}h`;
+        if (hours === 0) return `${days}d ${minutes}m`;
+        return `${days}d ${hours}h ${minutes}m`;
+      } else if (totalHours >= 1) {
+        const hours = Math.floor(totalHours);
+        const minutes = Math.round((totalHours % 1) * 60);
+        if (minutes === 0) return `${hours}h`;
+        return `${hours}h ${minutes}m`;
+      } else {
+        const minutes = Math.round(totalHours * 60);
+        return `${minutes}m`;
+      }
+    }
+    
+    notificationDiv.innerHTML = `
+      <div class="notification-header">
+        <div class="notification-title">📋 ${task.title}</div>
+        <div class="notification-time">
+          <span style="background-color: ${urgency.color}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px;">
+            ${urgency.text}
+          </span>
+        </div>
+      </div>
+      <div class="notification-details">
+        Due: ${task.due} ${task.dueTime}<br>
+        Time left: ${timeLeft.toFixed(1)} hours<br>
+        Min time required: ${formatMinTime(task.minTime)}<br>
+        Priority: ${task.importance.toUpperCase()}
+      </div>
+      <div class="notification-actions">
+        <button class="notification-btn btn-present" onclick="handleTaskNotificationResponse(${taskIndex}, 'done')">
+          ✅ Task Done
+        </button>
+        <button class="notification-btn btn-attended" onclick="handleTaskNotificationResponse(${taskIndex}, 'starting')">
+          🚀 Starting Now
+        </button>
+        <button class="notification-btn btn-not-taken" onclick="handleTaskNotificationResponse(${taskIndex}, 'skipped')">
+          ⏭️ Skip This Time
+        </button>
+      </div>
+    `;
+    
+    container.appendChild(notificationDiv);
+  });
+}
+
+function handleTaskNotificationResponse(taskIndex, action) {
+  const taskData = JSON.parse(localStorage.getItem('taskData')) || [];
+  const task = taskData[taskIndex];
+  if (!task) return;
+  
+  switch(action) {
+    case 'done':
+      task.completed = true;
+      break;
+    case 'starting':
+      task.started = new Date().toISOString();
+      break;
+    case 'skipped':
+      task.skipped = (task.skipped || 0) + 1;
+      break;
+  }
+  
+  localStorage.setItem('taskData', JSON.stringify(taskData));
+  
+  // Refresh notifications and scores
+  loadNotifications();
+  calculateTotalScore();
+}
+
+function getUrgentTasks() {
+  const taskData = JSON.parse(localStorage.getItem('taskData')) || [];
+  
+  function getTaskUrgency(task) {
+    if (task.completed) return null;
+    
+    const now = new Date();
+    const deadline = new Date(`${task.due}T${task.dueTime}`);
+    const timeLeft = (deadline - now) / (1000 * 60 * 60); // hours
+    const minTime = task.minTime || 1;
+    
+    if (timeLeft < 0) {
+      return { level: 'overdue', color: '#8B0000', text: 'OVERDUE' };
+    } else if (timeLeft <= minTime) {
+      return { level: 'very-urgent', color: '#FF0000', text: 'VERY URGENT' };
+    } else if (timeLeft <= minTime * 2) {
+      return { level: 'urgent-red', color: '#DC143C', text: 'URGENT' };
+    } else if (timeLeft <= minTime * 4) {
+      return { level: 'urgent-green', color: '#228B22', text: 'URGENT' };
+    }
+    
+    return null;
+  }
+  
+  return taskData.filter(task => {
+    if (task.completed) return false;
+    const urgency = getTaskUrgency(task);
+    return urgency && ['urgent-green', 'urgent-red', 'very-urgent', 'overdue'].includes(urgency.level);
   });
 }
 
