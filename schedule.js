@@ -173,6 +173,21 @@ function setupEventListeners() {
   document.getElementById('custom-frequency').addEventListener('change', function() {
     document.getElementById('custom-weekdays-group').style.display = this.value === 'week' ? 'block' : 'none';
   });
+
+  // Recurring options modal
+  document.getElementById('close-recurring-options').addEventListener('click', closeRecurringOptionsModal);
+  document.getElementById('cancel-recurring-options').addEventListener('click', closeRecurringOptionsModal);
+  
+  document.getElementById('edit-this-only').addEventListener('click', () => handleRecurringEventOption('this-only'));
+  document.getElementById('edit-this-and-following').addEventListener('click', () => handleRecurringEventOption('this-and-following'));
+  document.getElementById('edit-all-events').addEventListener('click', () => handleRecurringEventOption('all'));
+
+  // Close recurring modal when clicking outside
+  document.getElementById('recurring-options-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeRecurringOptionsModal();
+    }
+  });
 }
 // Custom recurrence modal functions
 let customRecurrence = null;
@@ -236,6 +251,18 @@ function openCreateEventModal() {
 }
 
 function openEditEventModal(event) {
+  // Always open the edit modal directly first, regardless of recurrence
+  openEditEventModalDirect(event);
+  
+  // Store whether this is a recurring event to check later when saving/deleting
+  if (isRecurringEvent(event)) {
+    window.isEditingRecurringEvent = true;
+  } else {
+    window.isEditingRecurringEvent = false;
+  }
+}
+
+function openEditEventModalDirect(event) {
   editingEventId = event.id;
   document.getElementById('modal-title').textContent = 'Edit Event';
   document.getElementById('delete-event-btn').style.display = 'block';
@@ -281,6 +308,58 @@ function openEditEventModal(event) {
 function closeModal() {
   document.getElementById('event-modal').style.display = 'none';
   editingEventId = null;
+}
+
+// Recurring event helper functions
+function isRecurringEvent(event) {
+  return event.repeat && event.repeat !== 'none';
+}
+
+function getEventSeries(event) {
+  // Find all events that belong to the same recurring series
+  return events.filter(e => 
+    e.title === event.title && 
+    e.type === event.type && 
+    e.subject === event.subject &&
+    e.repeat === event.repeat &&
+    e.created === event.created
+  );
+}
+
+function showRecurringOptionsModal(event, action) {
+  const modal = document.getElementById('recurring-options-modal');
+  const title = document.getElementById('recurring-modal-title');
+  const message = document.getElementById('recurring-modal-message');
+  
+  if (action === 'edit') {
+    title.textContent = 'Edit Recurring Event';
+    message.textContent = 'This is a recurring event. What would you like to edit?';
+  } else if (action === 'delete') {
+    title.textContent = 'Delete Recurring Event';
+    message.textContent = 'This is a recurring event. What would you like to delete?';
+    
+    // Update button text for delete
+    document.getElementById('edit-this-only').innerHTML = '🗑️ This event only';
+    document.getElementById('edit-this-and-following').innerHTML = '🗑️➡️ This and following events';
+    document.getElementById('edit-all-events').innerHTML = '🗑️🗑️ All events in the series';
+  }
+  
+  modal.style.display = 'block';
+  
+  // Store current event for the option handlers
+  window.currentRecurringEvent = event;
+  window.currentRecurringAction = action;
+}
+
+function closeRecurringOptionsModal() {
+  document.getElementById('recurring-options-modal').style.display = 'none';
+  window.currentRecurringEvent = null;
+  window.currentRecurringAction = null;
+  
+  // Reset button text
+  document.getElementById('edit-this-only').innerHTML = '📅 This event only';
+  document.getElementById('edit-this-and-following').innerHTML = '📅➡️ This and following events';
+  document.getElementById('edit-all-events').innerHTML = '📅📅 All events in the series';
 }
 
 // Event CRUD operations
@@ -336,22 +415,43 @@ function saveEvent() {
     created: editingEventId ? events.find(e => e.id === editingEventId).created : new Date().toISOString()
   };
 
-  if (editingEventId) {
+  // Store the eventData to use later after recurring options
+  window.pendingEventData = eventData;
+
+  if (editingEventId && window.isEditingRecurringEvent) {
+    // If we're editing a recurring event, show options before saving
+    const originalEvent = events.find(e => e.id === editingEventId);
+    closeModal();
+    showRecurringOptionsModal(originalEvent, 'edit');
+    return;
+  }
+
+  // For new events or non-recurring edits, save directly
+  saveEventWithData(eventData);
+}
+
+function saveEventWithData(eventData) {
+  if (eventData.id && events.some(e => e.id === eventData.id)) {
     // Update existing event
-    const index = events.findIndex(e => e.id === editingEventId);
+    const index = events.findIndex(e => e.id === eventData.id);
     events[index] = eventData;
   } else {
     // Create new event
     events.push(eventData);
     // Handle recurring events
-    if (repeat !== 'none') {
-      if (repeat === 'custom' && eventData.customRecurrence) {
+    if (eventData.repeat !== 'none') {
+      if (eventData.repeat === 'custom' && eventData.customRecurrence) {
         createCustomRecurringEvents(eventData);
       } else {
         createRecurringEvents(eventData);
       }
     }
   }
+  
+  saveEvents();
+  renderAgenda();
+  closeModal();
+}
 // Custom recurring events logic
 function createCustomRecurringEvents(eventData) {
   const recur = eventData.customRecurrence;
@@ -427,11 +527,6 @@ function createCustomRecurringEvents(eventData) {
   }
 }
 
-  saveEvents();
-  renderAgenda();
-  closeModal();
-}
-
 function createRecurringEvents(eventData) {
   const baseDate = new Date(eventData.date);
   const endDate = new Date(baseDate);
@@ -475,12 +570,140 @@ function createRecurringEvents(eventData) {
 function deleteEvent() {
   if (!editingEventId) return;
   
+  const event = events.find(e => e.id === editingEventId);
+  if (!event) return;
+  
+  if (!confirm('Are you sure you want to delete this event?')) {
+    return;
+  }
+  
+  // Check if this is a recurring event
+  if (window.isEditingRecurringEvent) {
+    closeModal(); // Close edit modal first
+    showRecurringOptionsModal(event, 'delete');
+    return;
+  }
+  
+  // Non-recurring event - delete directly
+  events = events.filter(e => e.id !== editingEventId);
+  saveEvents();
+  renderAgenda();
+  closeModal();
+}
+
+function deleteEventDirect(eventId) {
   if (confirm('Are you sure you want to delete this event?')) {
-    events = events.filter(e => e.id !== editingEventId);
+    events = events.filter(e => e.id !== eventId);
     saveEvents();
     renderAgenda();
     closeModal();
   }
+}
+
+function handleRecurringEventOption(option) {
+  const event = window.currentRecurringEvent;
+  const action = window.currentRecurringAction;
+  
+  if (!event || !action) return;
+  
+  closeRecurringOptionsModal();
+  
+  if (action === 'edit') {
+    handleRecurringEdit(event, option);
+  } else if (action === 'delete') {
+    handleRecurringDelete(event, option);
+  }
+}
+
+function handleRecurringEdit(event, option) {
+  const pendingEventData = window.pendingEventData;
+  if (!pendingEventData) {
+    return; // No pending data
+  }
+  
+  switch (option) {
+    case 'this-only':
+      // Update only this single instance, removing recurrence
+      const singleEvent = { ...pendingEventData, repeat: 'none', customRecurrence: null };
+      // Find and update the single event
+      const index = events.findIndex(e => e.id === event.id);
+      if (index !== -1) {
+        events[index] = singleEvent;
+      }
+      break;
+      
+    case 'this-and-following':
+      // Update this and all future events in the series
+      const eventSeries = getEventSeries(event);
+      const eventDate = new Date(event.date);
+      const futureEvents = eventSeries.filter(e => new Date(e.date) >= eventDate);
+      
+      futureEvents.forEach(e => {
+        const idx = events.findIndex(event => event.id === e.id);
+        if (idx !== -1) {
+          // Keep the original date but update other properties
+          events[idx] = { 
+            ...pendingEventData, 
+            id: e.id, 
+            date: e.date 
+          };
+        }
+      });
+      break;
+      
+    case 'all':
+      // Update all events in the series
+      const allSeries = getEventSeries(event);
+      
+      allSeries.forEach(e => {
+        const idx = events.findIndex(event => event.id === e.id);
+        if (idx !== -1) {
+          // Keep the original date but update other properties
+          events[idx] = { 
+            ...pendingEventData, 
+            id: e.id, 
+            date: e.date 
+          };
+        }
+      });
+      break;
+  }
+  
+  // Clean up pending data
+  window.pendingEventData = null;
+  
+  // Save and update the view
+  saveEvents();
+  renderAgenda();
+}
+
+function handleRecurringDelete(event, option) {
+  switch (option) {
+    case 'this-only':
+      // Delete only this single instance
+      events = events.filter(e => e.id !== event.id);
+      break;
+      
+    case 'this-and-following':
+      // Delete this and all future events in the series
+      const eventSeries = getEventSeries(event);
+      const eventDate = new Date(event.date);
+      const idsToDelete = eventSeries
+        .filter(e => new Date(e.date) >= eventDate)
+        .map(e => e.id);
+      events = events.filter(e => !idsToDelete.includes(e.id));
+      break;
+      
+    case 'all':
+      // Delete all events in the series
+      const allSeries = getEventSeries(event);
+      const allIdsToDelete = allSeries.map(e => e.id);
+      events = events.filter(e => !allIdsToDelete.includes(e.id));
+      break;
+  }
+  
+  saveEvents();
+  renderAgenda();
 }
 
 function generateId() {

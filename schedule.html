@@ -547,6 +547,33 @@
     </div>
   </div>
 
+  <!-- Recurring Event Options Modal -->
+  <div class="event-modal" id="recurring-options-modal" style="display:none;">
+    <div class="event-modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="recurring-modal-title">Edit Recurring Event</h3>
+        <button class="close-btn" id="close-recurring-options">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="recurring-modal-message">This is a recurring event. What would you like to edit?</p>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+          <button class="btn btn-primary" id="edit-this-only" style="width: 100%; text-align: left; padding: 12px;">
+            📅 This event only
+          </button>
+          <button class="btn btn-primary" id="edit-this-and-following" style="width: 100%; text-align: left; padding: 12px;">
+            📅➡️ This and following events
+          </button>
+          <button class="btn btn-primary" id="edit-all-events" style="width: 100%; text-align: left; padding: 12px;">
+            📅📅 All events in the series
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-recurring-options">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
   <script src="schedule.js"></script>
 </body>
