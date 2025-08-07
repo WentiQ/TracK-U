@@ -65,14 +65,42 @@ function loadHabitScore() {
   return parseFloat(percent);
 }
 
-function loadEventScore() {
-  const data = JSON.parse(localStorage.getItem('eventData')) || [];
-  const total = data.length;
-  const attended = data.filter(e => e.status === 'Attended').length;
-  const percent = total > 0 ? ((attended / total) * 100).toFixed(1) : 0;
-  document.getElementById('event-score').innerText = percent;
-  return parseFloat(percent);
+function loadSpiritualScore() {
+  const spiritualData = JSON.parse(localStorage.getItem('spiritualData')) || {};
+  const today = getToday();
+  
+  if (!spiritualData[today]) {
+    document.getElementById('spiritual-score').innerText = 0;
+    return 0;
+  }
+  
+  // Calculate total spiritual score
+  function calculateTotalSpiritualScore(data) {
+    const todayData = data[today];
+    if (!todayData) return 0;
+    
+    const scores = [
+      todayData.wakeupScore * 0.1,
+      todayData.chantingScore * 0.1,
+      todayData.mangalaScore * 0.1,
+      todayData.narasimhaScore * 0.1,
+      todayData.tulasiScore * 0.1,
+      todayData.readingScore * 0.1,
+      todayData.clothesScore * 0.1,
+      todayData.washingScore * 0.1,
+      todayData.cleaningScore * 0.1,
+      todayData.sleepScore * 0.1
+    ];
+    
+    return Math.round(scores.reduce((sum, score) => sum + score, 0));
+  }
+  
+  const score = calculateTotalSpiritualScore(spiritualData);
+  document.getElementById('spiritual-score').innerText = score;
+  return score;
 }
+
+
 
 function loadTodoScore() {
   const data = JSON.parse(localStorage.getItem('todoData')) || {};
@@ -86,22 +114,52 @@ function loadTodoScore() {
 }
 
 function calculateTotalScore() {
-  const a = loadAttendanceScore();
-  const t = loadTaskScore();
-  const h = loadHabitScore();
-  const e = loadEventScore();
-  const d = loadTodoScore();
+  // Check if each category has at least one item for today
+  const today = getToday();
+  // Attendance: at least one class or event scheduled today
+  const scheduleEvents = JSON.parse(localStorage.getItem('scheduleEvents')) || [];
+  const hasAttendance = scheduleEvents.some(e => e.date === today);
 
-  // Score weights
-  const score = (
-    (a * 0.3) +
-    (t * 0.2) +
-    (h * 0.15) +
-    (e * 0.15) +
-    (d * 0.2)
-  ).toFixed(1);
+  // Tasks: at least one task with due date today
+  const taskData = JSON.parse(localStorage.getItem('taskData')) || [];
+  const hasTask = taskData.some(t => t.due === today);
 
-  document.getElementById('total-score').innerText = score;
+  // Habits: at least one habit exists (habits are daily)
+  const habitData = JSON.parse(localStorage.getItem('habitData')) || {};
+  const hasHabit = Object.keys(habitData).length > 0;
+
+  // To-Do: at least one todo for today
+  const todoData = JSON.parse(localStorage.getItem('todoData')) || {};
+  const hasTodo = (todoData[today] || []).length > 0;
+
+  // Spiritual: always included (spiritualData is daily, but user may not fill it)
+  const hasSpiritual = true;
+
+  // Build list of present categories and their weights
+  const categories = [];
+  if (hasAttendance) categories.push({ key: 'attendance', weight: 0.2, value: loadAttendanceScore() });
+  if (hasTask) categories.push({ key: 'task', weight: 0.2, value: loadTaskScore() });
+  if (hasHabit) categories.push({ key: 'habit', weight: 0.15, value: loadHabitScore() });
+  if (hasTodo) categories.push({ key: 'todo', weight: 0.15, value: loadTodoScore() });
+  if (hasSpiritual) categories.push({ key: 'spiritual', weight: 0.3, value: loadSpiritualScore() });
+
+  // If all are missing (should not happen), show 0
+  if (categories.length === 0) {
+    document.getElementById('total-score').innerText = '0.0';
+    return;
+  }
+
+  // Calculate total present weight
+  const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
+
+  // Distribute weights proportionally
+  let score = 0;
+  categories.forEach(c => {
+    const proportionalWeight = c.weight / totalWeight;
+    score += c.value * proportionalWeight;
+  });
+
+  document.getElementById('total-score').innerText = score.toFixed(1);
 }
 
 // Notification system for schedule events and tasks

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spiritual Track - Student Tracker</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <nav id="sidebar">
+    <div class="sidebar-header">📘 Menu</div>
+    <ul>
+      <li><a href="index.html">🏠 Dashboard</a></li>
+      <li><a href="attendance.html">📅 Attendance</a></li>
+      <li><a href="tasks.html">✅ Tasks</a></li>
+      <li><a href="habits.html">💡 Habits</a></li>
+      <li><a href="todo.html">📝 To-Do</a></li>
+      <li><a href="schedule.html">📅 Schedule</a></li>
+      <li><a href="spiritual.html">🙏 Spiritual</a></li>
+      <li><a href="settings.html">⚙️ Settings</a></li>
+    </ul>
+  </nav>
+
+  <div id="content">
+    <header>
+      <button id="menu-toggle">☰</button>
+      <h1>🙏 Spiritual Track</h1>
+    </header>
+
+    <main>
+      <!-- Daily Spiritual Summary -->
+      <section class="dashboard-section">
+        <h2>📊 Today's Spiritual Score</h2>
+        <div id="spiritual-metrics">
+          <p>🌅 Wake-up Time: <span id="wakeup-score">--</span> points</p>
+          <p>📿 Chanting Rounds: <span id="chanting-score">--</span> points</p>
+          <p>🛐 Mangala Arati: <span id="mangala-score">--</span> points</p>
+          <p>🦁 Narasimha Arati: <span id="narasimha-score">--</span> points</p>
+          <p>🌿 Tulasi Arati: <span id="tulasi-score">--</span> points</p>
+          <p>📖 Reading Time: <span id="reading-score">--</span> points</p>
+          <p>👕 Fresh Clothes: <span id="clothes-score">--</span> points</p>
+          <p>🧺 Washing Clothes: <span id="washing-score">--</span> points</p>
+          <p>🧹 Room Cleaning: <span id="cleaning-score">--</span> points</p>
+          <p>😴 Sleep Time: <span id="sleep-score">--</span> points</p>
+        </div>
+        <div id="spiritual-total">
+          <h3>🙏 Total Spiritual Score: <span id="total-spiritual-score">--</span> / 100</h3>
+        </div>
+      </section>
+
+      <!-- Wake-up Time Entry -->
+      <section class="dashboard-section">
+        <h2>🌅 Wake-up Time</h2>
+        <div class="spiritual-entry">
+          <label for="wakeup-time">What time did you wake up today?</label>
+          <input type="time" id="wakeup-time" />
+          <button onclick="logWakeupTime()">Log Wake-up Time</button>
+        </div>
+        <div id="wakeup-status" class="status-display"></div>
+      </section>
+
+      <!-- Chanting Rounds -->
+      <section class="dashboard-section">
+        <h2>📿 Chanting Rounds</h2>
+        <div class="spiritual-entry">
+          <label for="target-rounds">Target Rounds for Today:</label>
+          <input type="number" id="target-rounds" min="1" max="64" value="16" />
+          
+          <label for="completed-rounds">Completed Rounds:</label>
+          <input type="number" id="completed-rounds" min="0" max="64" value="0" />
+          
+          <button onclick="logChantingRounds()">Log Chanting</button>
+        </div>
+        <div id="chanting-status" class="status-display"></div>
+      </section>
+
+      <!-- Arati Attendance -->
+      <section class="dashboard-section">
+        <h2>🛐 Arati Attendance</h2>
+        <div class="arati-grid">
+          <div class="arati-item">
+            <h3>🌅 Mangala Arati</h3>
+            <label>
+              <input type="checkbox" id="mangala-arati" onchange="logAratiAttendance('mangala')">
+              Attended Mangala Arati
+            </label>
+            <div id="mangala-status" class="status-display"></div>
+          </div>
+          
+          <div class="arati-item">
+            <h3>🦁 Narasimha Arati</h3>
+            <label>
+              <input type="checkbox" id="narasimha-arati" onchange="logAratiAttendance('narasimha')">
+              Attended Narasimha Arati
+            </label>
+            <div id="narasimha-status" class="status-display"></div>
+          </div>
+          
+          <div class="arati-item">
+            <h3>🌿 Tulasi Arati</h3>
+            <label>
+              <input type="checkbox" id="tulasi-arati" onchange="logAratiAttendance('tulasi')">
+              Attended Tulasi Arati
+            </label>
+            <div id="tulasi-status" class="status-display"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Spiritual Reading -->
+      <section class="dashboard-section">
+        <h2>📖 Spiritual Reading</h2>
+        <div class="spiritual-entry">
+          <label for="target-reading">Target Reading Time (minutes):</label>
+          <input type="number" id="target-reading" min="1" max="480" value="30" />
+          
+          <label for="actual-reading">Actual Reading Time (minutes):</label>
+          <input type="number" id="actual-reading" min="0" max="480" value="0" />
+          
+          <button onclick="logReadingTime()">Log Reading</button>
+        </div>
+        <div id="reading-status" class="status-display"></div>
+      </section>
+
+      <!-- Daily Practices -->
+      <section class="dashboard-section">
+        <h2>🧘 Daily Practices</h2>
+        <div class="practices-grid">
+          <div class="practice-item">
+            <h3>👕 Fresh Clothes After Bath</h3>
+            <div class="clothes-options">
+              <label>
+                <input type="radio" name="clothes-status" value="all-fresh" onchange="logClothesStatus()">
+                All clothes are fresh after bath
+              </label>
+              <label>
+                <input type="radio" name="clothes-status" value="not-all-fresh" onchange="logClothesStatus()">
+                At least one item is not fresh
+              </label>
+            </div>
+            <div id="clothes-status" class="status-display"></div>
+          </div>
+          
+          <div class="practice-item">
+            <h3>🧺 Washing Own Clothes</h3>
+            <label>
+              <input type="checkbox" id="washing-clothes" onchange="logWashingClothes()">
+              Washed my own clothes today
+            </label>
+            <div id="washing-status" class="status-display"></div>
+          </div>
+          
+          <div class="practice-item">
+            <h3>🧹 Cleaning Personal Room</h3>
+            <label>
+              <input type="checkbox" id="room-cleaning" onchange="logRoomCleaning()">
+              Cleaned my personal room today
+            </label>
+            <div id="cleaning-status" class="status-display"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sleep Time -->
+      <section class="dashboard-section">
+        <h2>😴 Sleep Time</h2>
+        <div class="spiritual-entry">
+          <label for="sleep-time">What time did you sleep last night?</label>
+          <input type="time" id="sleep-time" />
+          <button onclick="logSleepTime()">Log Sleep Time</button>
+        </div>
+        <div id="sleep-status" class="status-display"></div>
+      </section>
+
+      <!-- Daily History -->
+      <section class="dashboard-section">
+        <h2>📅 Spiritual History</h2>
+        <div id="spiritual-history">
+          <!-- History will be populated here -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <style>
+    .spiritual-entry {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .spiritual-entry label {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .spiritual-entry input,
+    .spiritual-entry button {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .spiritual-entry button {
+      background-color: #8e44ad;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .spiritual-entry button:hover {
+      background-color: #7d3c98;
+    }
+
+    .arati-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .arati-item {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+    }
+
+    .arati-item h3 {
+      margin-top: 0;
+      color: #6f42c1;
+    }
+
+    .arati-item label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .practices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .practice-item {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+    }
+
+    .practice-item h3 {
+      margin-top: 0;
+      color: #17a2b8;
+    }
+
+    .clothes-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .clothes-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .status-display {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .status-display.excellent {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-display.good {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .status-display.fair {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .status-display.poor {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    #spiritual-metrics p {
+      font-size: 1rem;
+      margin: 0.5rem 0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #spiritual-total h3 {
+      color: #6f42c1;
+      margin-top: 1rem;
+      font-size: 1.25rem;
+      text-align: center;
+    }
+
+    .history-item {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .history-date {
+      font-weight: bold;
+      color: #6f42c1;
+      margin-bottom: 0.5rem;
+    }
+
+    .history-score {
+      text-align: right;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .arati-grid,
+      .practices-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .spiritual-entry {
+        gap: 0.5rem;
+      }
+    }
+  </style>
+
+  <script src="script.js"></script>
+  <script src="spiritual.js"></script>
+</body>
+</html>
