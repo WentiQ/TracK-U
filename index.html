@@ -31,17 +31,43 @@
 
     <main>
       <section class="dashboard-section">
-        <h2>📊 Today’s Summary</h2>
-        <div id="dashboard-metrics">
-          <p>📅 Attendance: <span id="attendance-score">--</span>%</p>
-          <p>✅ Tasks: <span id="task-score">--</span>%</p>
-          <p>💡 Habits: <span id="habit-score">--</span>%</p>
-          <p>📝 To-Do: <span id="todo-score">--</span>%</p>
-          <p>🙏 Spiritual: <span id="spiritual-score">--</span>%</p>
+        <h2 style="margin-bottom: 1.5rem;">📊 Today’s Summary</h2>
+        <div id="dashboard-total" class="summary-total" style="margin-bottom: 2rem;">
+          <h2 style="color: #6f42c1; font-size: 2.1rem; font-weight: 800; margin: 0 0 0.5rem 0; letter-spacing: 1px;">
+            🧠 Total Daily Score: <span id="total-score">--</span> / 100
+          </h2>
         </div>
-
-        <div id="dashboard-total">
-          <h3>🧠 Total Daily Score: <span id="total-score">--</span> / 100</h3>
+        <div class="summary-grid">
+          <div class="summary-card attendance">
+            <div class="summary-icon">📅</div>
+            <div class="summary-label">Attendance</div>
+            <div class="summary-value" id="attendance-score">--</div>
+            <div class="summary-unit">%</div>
+          </div>
+          <div class="summary-card tasks">
+            <div class="summary-icon">✅</div>
+            <div class="summary-label">Tasks</div>
+            <div class="summary-value" id="task-score">--</div>
+            <div class="summary-unit">%</div>
+          </div>
+          <div class="summary-card habits">
+            <div class="summary-icon">💡</div>
+            <div class="summary-label">Habits</div>
+            <div class="summary-value" id="habit-score">--</div>
+            <div class="summary-unit">%</div>
+          </div>
+          <div class="summary-card todo">
+            <div class="summary-icon">📝</div>
+            <div class="summary-label">To-Do</div>
+            <div class="summary-value" id="todo-score">--</div>
+            <div class="summary-unit">%</div>
+          </div>
+          <div class="summary-card spiritual">
+            <div class="summary-icon">🙏</div>
+            <div class="summary-label">Spiritual</div>
+            <div class="summary-value" id="spiritual-score">--</div>
+            <div class="summary-unit">pts</div>
+          </div>
         </div>
       </section>
 
@@ -56,121 +82,80 @@
   </div>
 
   <style>
-    .notification-item {
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .notification-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    
-    .notification-title {
-      font-weight: 600;
-      color: #333;
-      font-size: 16px;
-    }
-    
-    .notification-time {
-      font-size: 12px;
-      color: #666;
-      background: #f0f0f0;
-      padding: 2px 8px;
+    .dashboard-summary {
+      background: linear-gradient(120deg, #f8fafc 60%, #e9f0fb 100%);
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08);
       border-radius: 12px;
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      margin-bottom: 2rem;
     }
-    
-    .notification-details {
-      margin-bottom: 12px;
-      color: #555;
-      font-size: 14px;
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
     }
-    
-    .notification-actions {
+    .summary-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(52, 152, 219, 0.08);
+      padding: 1.25rem 1rem 1rem 1rem;
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      min-height: 120px;
+      border: 2px solid #eaf1fb;
+      transition: box-shadow 0.2s, border 0.2s;
     }
-    
-    .notification-btn {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.2s;
+    .summary-card:hover {
+      box-shadow: 0 4px 16px rgba(52, 152, 219, 0.13);
+      border: 2px solid #b3d8fd;
     }
-    
-    .btn-present {
-      background: #28a745;
-      color: white;
+    .summary-icon {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
     }
-    
-    .btn-present:hover {
-      background: #218838;
+    .summary-label {
+      font-size: 1.1rem;
+      color: #3498db;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
     }
-    
-    .btn-absent {
-      background: #dc3545;
-      color: white;
+    .summary-value {
+      font-size: 2.1rem;
+      font-weight: bold;
+      color: #222;
+      margin-bottom: 0.1rem;
+      letter-spacing: 1px;
     }
-    
-    .btn-absent:hover {
-      background: #c82333;
+    .summary-unit {
+      font-size: 0.95rem;
+      color: #888;
+      margin-bottom: 0.1rem;
     }
-    
-    .btn-not-taken {
-      background: #6c757d;
-      color: white;
+    .summary-total {
+      text-align: center;
+      margin-top: 1.5rem;
     }
-    
-    .btn-not-taken:hover {
-      background: #5a6268;
+    .summary-total h3 {
+      color: #6f42c1;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin: 0;
     }
-    
-    .btn-attended {
-      background: #007bff;
-      color: white;
-    }
-    
-    .btn-attended:hover {
-      background: #0056b3;
-    }
-    
-    .btn-not-attended {
-      background: #ffc107;
-      color: #212529;
-    }
-    
-    .btn-not-attended:hover {
-      background: #e0a800;
-    }
-    
-    .notification-item.class-notification {
-      border-left: 4px solid #007bff;
-    }
-    
-    .notification-item.event-notification {
-      border-left: 4px solid #28a745;
-    }
-    
-    @media (max-width: 768px) {
-      .notification-actions {
-        flex-direction: column;
-      }
-      
-      .notification-btn {
-        width: 100%;
-        margin-bottom: 4px;
+    @media (max-width: 700px) {
+      .summary-grid {
+        grid-template-columns: 1fr 1fr;
       }
     }
+    @media (max-width: 500px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    /* ...existing notification styles... */
   </style>
 
   <script src="script.js"></script>
