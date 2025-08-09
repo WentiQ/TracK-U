@@ -28,6 +28,7 @@ let timerInterval = null;
 let firstFocusStarted = false;
 let customSound = null;
 let activeTab = "timer";
+let charts = {}; // Store chart instances
 
 function getDefaultSettings() {
   return {
@@ -335,6 +336,256 @@ function getThisYearStats() {
   return getStatsForPeriod(firstDay, lastDay);
 }
 
+// Chart generation functions
+function getWeeklyData() {
+  const now = new Date();
+  const weekData = [];
+  const labels = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - i);
+    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+    
+    const dayStats = getStatsForPeriod(startOfDay, endOfDay);
+    weekData.push(dayStats.pomodoros);
+    labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+  }
+  
+  return { labels, data: weekData };
+}
+
+function getMonthlyData() {
+  const now = new Date();
+  const monthData = [];
+  const labels = [];
+  
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    
+    const monthStats = getStatsForPeriod(startOfMonth, endOfMonth);
+    monthData.push(monthStats.pomodoros);
+    labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
+  }
+  
+  return { labels, data: monthData };
+}
+
+function getSessionTypeData() {
+  const workSessions = sessions.filter(s => s.type === 'work').length;
+  const shortBreaks = sessions.filter(s => s.type === 'shortBreak').length;
+  const longBreaks = sessions.filter(s => s.type === 'longBreak').length;
+  
+  return {
+    labels: ['Work Sessions', 'Short Breaks', 'Long Breaks'],
+    data: [workSessions, shortBreaks, longBreaks]
+  };
+}
+
+function getHourlyProductivity() {
+  const hourlyData = new Array(24).fill(0);
+  const labels = [];
+  
+  for (let i = 0; i < 24; i++) {
+    labels.push(`${i.toString().padStart(2, '0')}:00`);
+  }
+  
+  sessions.filter(s => s.type === 'work').forEach(session => {
+    const hour = new Date(session.completedAt).getHours();
+    hourlyData[hour]++;
+  });
+  
+  return { labels, data: hourlyData };
+}
+
+function createChart(canvasId, type, data, options = {}) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return null;
+  
+  // Destroy existing chart if it exists
+  if (charts[canvasId]) {
+    charts[canvasId].destroy();
+  }
+  
+  const defaultOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      }
+    }
+  };
+  
+  charts[canvasId] = new Chart(ctx, {
+    type: type,
+    data: data,
+    options: { ...defaultOptions, ...options }
+  });
+  
+  return charts[canvasId];
+}
+
+function generateInsights() {
+  const totalWorkSessions = sessions.filter(s => s.type === 'work').length;
+  const totalFocusTime = sessions.filter(s => s.type === 'work').reduce((sum, s) => sum + s.duration, 0);
+  const avgSessionLength = totalWorkSessions > 0 ? Math.round(totalFocusTime / totalWorkSessions) : 0;
+  
+  const todayStats = getTodayStats();
+  const weekStats = getThisWeekStats();
+  const monthStats = getThisMonthStats();
+  
+  const dailyAvg = weekStats.pomodoros > 0 ? Math.round(weekStats.pomodoros / 7) : 0;
+  const weeklyAvg = monthStats.pomodoros > 0 ? Math.round(monthStats.pomodoros / 4) : 0;
+  
+  // Find most productive hour
+  const hourlyData = getHourlyProductivity();
+  const maxHour = hourlyData.data.indexOf(Math.max(...hourlyData.data));
+  const mostProductiveHour = maxHour === -1 ? "N/A" : `${maxHour.toString().padStart(2, '0')}:00`;
+  
+  // Calculate streak
+  let currentStreak = 0;
+  const today = new Date();
+  for (let i = 0; i < 30; i++) {
+    const checkDate = new Date(today);
+    checkDate.setDate(today.getDate() - i);
+    const startOfDay = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
+    const endOfDay = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate() + 1);
+    const dayStats = getStatsForPeriod(startOfDay, endOfDay);
+    
+    if (dayStats.pomodoros > 0) {
+      currentStreak++;
+    } else {
+      break;
+    }
+  }
+  
+  return `
+    <div class="insight-card">
+      <div class="insight-title">🎯 Average Session</div>
+      <div class="insight-value">${avgSessionLength} minutes</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title">📊 Daily Average</div>
+      <div class="insight-value">${dailyAvg} pomodoros</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title">🔥 Current Streak</div>
+      <div class="insight-value">${currentStreak} days</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title">⭐ Most Productive Hour</div>
+      <div class="insight-value">${mostProductiveHour}</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title">📈 Weekly Average</div>
+      <div class="insight-value">${weeklyAvg} pomodoros</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title">⏱️ Total Focus Time</div>
+      <div class="insight-value">${Math.floor(totalFocusTime / 60)}h ${totalFocusTime % 60}m</div>
+    </div>
+  `;
+}
+
+function renderCharts() {
+  // Delay chart rendering to ensure DOM elements exist
+  setTimeout(() => {
+    // Weekly Progress Chart
+    const weeklyData = getWeeklyData();
+    createChart('weeklyChart', 'line', {
+      labels: weeklyData.labels,
+      datasets: [{
+        label: 'Pomodoros Completed',
+        data: weeklyData.data,
+        borderColor: '#3498db',
+        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    });
+    
+    // Session Types Pie Chart
+    const sessionData = getSessionTypeData();
+    createChart('sessionTypeChart', 'doughnut', {
+      labels: sessionData.labels,
+      datasets: [{
+        data: sessionData.data,
+        backgroundColor: ['#e74c3c', '#2ecc71', '#f39c12'],
+        borderColor: ['#c0392b', '#27ae60', '#e67e22'],
+        borderWidth: 2
+      }]
+    });
+    
+    // Monthly Trends Chart
+    const monthlyData = getMonthlyData();
+    createChart('monthlyChart', 'bar', {
+      labels: monthlyData.labels,
+      datasets: [{
+        label: 'Monthly Pomodoros',
+        data: monthlyData.data,
+        backgroundColor: 'rgba(155, 89, 182, 0.8)',
+        borderColor: '#9b59b6',
+        borderWidth: 1
+      }]
+    });
+    
+    // Hourly Productivity Chart
+    const hourlyData = getHourlyProductivity();
+    createChart('hourlyChart', 'line', {
+      labels: hourlyData.labels,
+      datasets: [{
+        label: 'Sessions per Hour',
+        data: hourlyData.data,
+        borderColor: '#16a085',
+        backgroundColor: 'rgba(22, 160, 133, 0.1)',
+        tension: 0.3,
+        fill: true
+      }]
+    }, {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Hour of Day'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Number of Sessions'
+          },
+          beginAtZero: true
+        }
+      }
+    });
+  }, 100);
+}
+
+function exportStats() {
+  const stats = {
+    today: getTodayStats(),
+    week: getThisWeekStats(),
+    month: getThisMonthStats(),
+    year: getThisYearStats(),
+    allSessions: sessions,
+    exportDate: new Date().toISOString()
+  };
+  
+  const dataStr = JSON.stringify(stats, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  
+  const exportFileDefaultName = `pomodoro-stats-${new Date().toISOString().split('T')[0]}.json`;
+  
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+}
+
 // UI Rendering
 function renderTimer() {
   const timerSection = document.querySelector('#focus-timer-app');
@@ -416,6 +667,11 @@ function renderTimer() {
       ${renderStats()}
     </div>
   `;
+  
+  // Render charts if stats tab is active
+  if (activeTab === 'stats') {
+    renderCharts();
+  }
 }
 
 function renderSettings() {
@@ -511,44 +767,78 @@ function renderStats() {
   
   return `
     <div class="focus-timer-stats">
-      <h3>Statistics</h3>
+      <h3>📊 Statistics & Analytics</h3>
       
       <div class="stats-period-selector">
-        <button onclick="showCustomDateRange()">Custom Range</button>
+        <button onclick="showCustomDateRange()">📅 Custom Range</button>
+        <button onclick="exportStats()">📤 Export Data</button>
       </div>
       
+      <!-- Summary Cards -->
       <div class="stats-grid">
         <div class="stats-period">
-          <h4>Today</h4>
+          <h4>📅 Today</h4>
           <div class="stat-item">🍅 ${todayStats.pomodoros} pomodoros</div>
           <div class="stat-item">⏱️ ${Math.floor(todayStats.focusTime / 60)}h ${todayStats.focusTime % 60}m focus</div>
           <div class="stat-item">☕ ${todayStats.breaks} breaks</div>
         </div>
         
         <div class="stats-period">
-          <h4>This Week</h4>
+          <h4>📅 This Week</h4>
           <div class="stat-item">🍅 ${weekStats.pomodoros} pomodoros</div>
           <div class="stat-item">⏱️ ${Math.floor(weekStats.focusTime / 60)}h ${weekStats.focusTime % 60}m focus</div>
           <div class="stat-item">☕ ${weekStats.breaks} breaks</div>
         </div>
         
         <div class="stats-period">
-          <h4>This Month</h4>
+          <h4>📅 This Month</h4>
           <div class="stat-item">🍅 ${monthStats.pomodoros} pomodoros</div>
           <div class="stat-item">⏱️ ${Math.floor(monthStats.focusTime / 60)}h ${monthStats.focusTime % 60}m focus</div>
           <div class="stat-item">☕ ${monthStats.breaks} breaks</div>
         </div>
         
         <div class="stats-period">
-          <h4>This Year</h4>
+          <h4>📅 This Year</h4>
           <div class="stat-item">🍅 ${yearStats.pomodoros} pomodoros</div>
           <div class="stat-item">⏱️ ${Math.floor(yearStats.focusTime / 60)}h ${yearStats.focusTime % 60}m focus</div>
           <div class="stat-item">☕ ${yearStats.breaks} breaks</div>
         </div>
       </div>
       
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <div class="chart-container">
+          <h4>📈 Weekly Progress (Last 7 Days)</h4>
+          <canvas id="weeklyChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="chart-container">
+          <h4>📊 Session Types Distribution</h4>
+          <canvas id="sessionTypeChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="chart-container">
+          <h4>📅 Monthly Trends (Last 12 Months)</h4>
+          <canvas id="monthlyChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="chart-container">
+          <h4>🕐 Hourly Productivity Pattern</h4>
+          <canvas id="hourlyChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+      
+      <!-- Insights Section -->
+      <div class="insights-section">
+        <h4>🧠 Insights & Analytics</h4>
+        <div class="insights-grid">
+          ${generateInsights()}
+        </div>
+      </div>
+      
+      <!-- Recent Sessions -->
       <div class="recent-sessions">
-        <h4>Recent Sessions</h4>
+        <h4>📋 Recent Sessions</h4>
         <div class="sessions-list">
           ${sessions.slice(0, 10).map(session => `
             <div class="session-item">
@@ -558,7 +848,7 @@ function renderStats() {
               }</span>
               <span class="session-duration">${session.duration}m</span>
               <span class="session-date">${new Date(session.completedAt).toLocaleString()}</span>
-              ${session.task ? `<span class="session-task">${session.task}</span>` : ''}
+              ${session.task ? `<span class="session-task">"${session.task}"</span>` : ''}
             </div>
           `).join('')}
         </div>
@@ -663,6 +953,7 @@ window.switchTab = switchTab;
 window.updateSetting = updateSetting;
 window.handleSoundUpload = handleSoundUpload;
 window.showCustomDateRange = showCustomDateRange;
+window.exportStats = exportStats;
 
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', initializeFocusTimer);
